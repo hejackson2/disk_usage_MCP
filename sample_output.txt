@@ -1,0 +1,12 @@
+$ opencode run "Check the local disk usage of my local system"
+
+> build · gemma4:12b
+
+⚙ disk_usage_get_disk_usage Unknown
+
+The disk usage for the `/System/Volumes/Data` partition is as follows:
+
+- **Total:** 494.38 GB
+- **Used:** 436.48 GB
+- **Free:** 57.91 GB
+

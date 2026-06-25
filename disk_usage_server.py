@@ -32,6 +32,53 @@ def get_disk_usage() -> str:
     except Exception as e:
         return f"Failed to retrieve disk usage: {str(e)}"
 
+
+@mcp.tool()
+def find_largest_items(target_dir: str, limit: int = 10) -> str:
+    """
+    Scans a given directory and returns the largest files found.
+    
+    Args:
+        target_dir: The absolute path of the directory to scan (e.g., '/Users/<username>/Downloads').
+        limit: The number of top large items to return (defaults to 10).
+    """
+    if not os.path.exists(target_dir):
+        return f"Error: The path '{target_dir}' does not exist."
+        
+    file_list = []
+    
+    try:
+        # Walk the directory structure safely
+        for root, _, files in os.walk(target_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # Skip broken symlinks or unreadable files safely
+                if os.path.islink(file_path):
+                    continue
+                try:
+                    file_size = os.path.getsize(file_path)
+                    file_list.append((file_path, file_size))
+                except (OSError, PermissionError):
+                    continue
+                    
+        # Sort files descending by size
+        file_list.sort(key=lambda x: x[1], reverse=True)
+        top_items = file_list[:limit]
+        
+        if not top_items:
+            return f"No readable files found in '{target_dir}'."
+            
+        # Format output cleanly
+        lines = [f"Top {len(top_items)} largest files in '{target_dir}':"]
+        for idx, (path, size) in enumerate(top_items, 1):
+            size_mb = round(size / (10**6), 2)
+            lines.append(f"{idx}. {path} ({size_mb} MB)")
+            
+        return "\n".join(lines)
+        
+    except Exception as e:
+        return f"An error occurred while scanning the directory: {str(e)}"
+
 if __name__ == "__main__":
     # This automatically starts the stdio server transport loop
     mcp.run()
